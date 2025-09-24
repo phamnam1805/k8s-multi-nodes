@@ -1,0 +1,20 @@
+---
+version: "3"
+
+dotenv: ['k8s-multi-nodes.env']
+
+tasks:
+  default: 
+    cmd: task --list --sort none
+    silent: true
+
+includes:
+  machines:
+    silent: true
+    taskfile: taskfiles/machines.yaml
+  kubernetes:
+    silent: true
+    taskfile: taskfiles/kubernetes.yaml
+  addons:
+    silent: true
+    taskfile: taskfiles/addons.yaml

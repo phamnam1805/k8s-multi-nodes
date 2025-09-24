@@ -1,0 +1,1 @@
+sudo /opt/socket_vmnet/bin/socket_vmnet --vmnet-mode=shared --vmnet-gateway=192.168.105.1 /private/var/run/lima/socket_vmnet.shared

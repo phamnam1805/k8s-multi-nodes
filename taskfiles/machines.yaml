@@ -1,0 +1,298 @@
+---
+version: "3"
+
+tasks:
+  bootstrap:
+    desc: Creates and bootstraps machines for a specified Kubernetes cluster topology (topo-1-1 / topo-1-2 / topo-2-3)
+    silent: true
+    cmds:
+      - '{{ if eq .CLI_ARGS "topo-1-1" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-1-1 &&
+               task machines:start-topo-1-1
+         {{- else if eq .CLI_ARGS "topo-1-2" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-1-2 &&
+               task machines:start-topo-1-2
+         {{- else if eq .CLI_ARGS "topo-2-3" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-2-3 &&
+               task machines:start-topo-2-3
+         {{ else }}
+               echo "Kubernetes cluster topology is not supported"                
+         {{ end }}'
+  create:
+    desc: Creates machines which were created for a specified Kubernetes cluster topology
+    silent: true
+    cmds:
+      - '{{ if eq .CLI_ARGS "topo-1-1" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-1-1
+         {{- else if eq .CLI_ARGS "topo-1-2" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-1-2
+         {{- else if eq .CLI_ARGS "topo-2-3" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-2-3
+         {{- else if eq .CLI_ARGS "topo-2-3" }}
+               task machines:generate-machine-config &&
+               task machines:create-topo-2-3
+         {{ else }}
+               echo "Kubernetes cluster topology is not supported"                
+         {{ end }}'
+  start:
+    desc: Starts machines which were created for a specified Kubernetes cluster topology
+    silent: true
+    cmds:
+      - '{{ if eq .CLI_ARGS "topo-1-1" }}
+               task machines:start-topo-1-1
+         {{- else if eq .CLI_ARGS "topo-1-2" }}
+               task machines:start-topo-1-2
+         {{- else if eq .CLI_ARGS "topo-2-3" }}
+               task machines:start-topo-2-3
+         {{ else }}
+               echo "Kubernetes cluster topology is not supported"                
+         {{ end }}'
+  stop:
+    desc: Stops running machines which were started for a specified Kubernetes cluster topology
+    silent: true
+    cmds:
+      - '{{ if eq .CLI_ARGS "topo-1-1" }}
+               task machines:stop-topo-1-1
+         {{- else if eq .CLI_ARGS "topo-1-2" }}
+               task machines:stop-topo-1-2
+         {{- else if eq .CLI_ARGS "topo-2-3" }}
+               task machines:stop-topo-2-3
+         {{ else }}
+               echo "Kubernetes cluster topology is not supported"                
+         {{ end }}'
+  delete:
+    desc: Deletes running or stopped machines which were created for a specified Kubernetes cluster topology
+    silent: true
+    cmds:
+      - '{{ if eq .CLI_ARGS "topo-1-1" }}
+               task machines:delete-topo-1-1
+         {{- else if eq .CLI_ARGS "topo-1-2" }}
+               task machines:delete-topo-1-2
+         {{- else if eq .CLI_ARGS "topo-2-3" }}
+               task machines:delete-topo-2-3
+         {{ else }}
+               echo "Kubernetes cluster topology is not supported"
+         {{ end }}'
+  list:
+    desc: Lists all machines which are currectly created or started (a wrapper to 'limactl list')
+    silent: true
+    cmd: limactl list
+  generate-machine-config:
+    desc: Generates lima configuration file 'lima-config/ubuntu-lts.yaml' based on 'lima-config/ubuntu-lts.templ.yaml' and Kubernetes version defined in 'k8s-multi-nodes.env'
+    silent: true
+    cmds:
+      - echo -e "\e[0;32mGenerating machine configuration with based on Kubernetes version defined in 'k8s-multi-nodes.env\e[0m"
+      - |
+        sed "s#<KUBERNETES_REPO>#$(grep -e 'KUBERNETES_REPO' k8s-multi-nodes.env | awk '{gsub(/[^.0-9]/, ""); printf "v%s",$1}')#g" lima-config/ubuntu-lts.templ.yaml | tee lima-config/ubuntu-lts.yaml >/dev/null
+      - |
+        sed -i '' "s#<KUBERNETES_VERSION>#$(grep -e 'KUBERNETES_VERSION' k8s-multi-nodes.env | awk '{gsub(/[^.0-9]/, ""); printf "%s",$1}')#g" lima-config/ubuntu-lts.yaml
+
+
+  create-topo-1-1:
+    silent: true
+    cmds:
+      - task: create-cp-1
+      - task: create-worker-1
+  start-topo-1-1:
+    silent: true
+    cmds:
+      - task: start-cp-1
+      - task: start-worker-1
+  stop-topo-1-1:
+    silent: true
+    cmds:
+      - task: stop-worker-1
+      - task: stop-cp-1
+  delete-topo-1-1:
+    silent: true
+    cmds:
+      - task: delete-worker-1
+      - task: delete-cp-1
+
+  create-topo-1-2:
+    silent: true
+    cmds:
+      - task: create-cp-1
+      - task: create-worker-1
+      - task: create-worker-2
+  start-topo-1-2:
+    silent: true
+    cmds:
+      - task: start-cp-1
+      - task: start-worker-1
+      - task: start-worker-2
+  stop-topo-1-2:
+    silent: true
+    cmds:
+      - task: stop-worker-1
+      - task: stop-worker-2
+      - task: stop-cp-1
+  delete-topo-1-2:
+    silent: true
+    cmds:
+      - task: delete-worker-1
+      - task: delete-worker-2
+      - task: delete-cp-1
+
+  create-topo-2-3:
+    silent: true
+    cmds:
+      - task: create-cp-1
+      - task: create-cp-2
+      - task: create-worker-1
+      - task: create-worker-2
+      - task: create-worker-3
+  start-topo-2-3:
+    silent: true
+    cmds:
+      - task: start-cp-1
+      - task: start-cp-2
+      - task: start-worker-1
+      - task: start-worker-2
+      - task: start-worker-3
+  stop-topo-2-3:
+    silent: true
+    cmds:
+      - task: stop-worker-1
+      - task: stop-worker-2
+      - task: stop-worker-3
+      - task: stop-cp-1
+      - task: stop-cp-2
+  delete-topo-2-3:
+    silent: true
+    cmds:
+      - task: delete-worker-1
+      - task: delete-worker-2
+      - task: delete-worker-3
+      - task: delete-cp-1
+      - task: delete-cp-2
+
+  create-cp-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mCreating 'cp-1' machine\e[0m"
+      - limactl create lima-config/ubuntu-lts.yaml --name cp-1 --set='.networks[].macAddress="52:55:55:12:34:01"' --cpus {{ .CP_CPUS }} --memory {{ .CP_RAM }} --disk {{ .CP_DISK }} --tty=false
+  create-cp-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mCreating 'cp-2' machine\e[0m"
+      - limactl create lima-config/ubuntu-lts.yaml --name cp-2 --set='.networks[].macAddress="52:55:55:12:34:02"' --cpus {{ .CP_CPUS }} --memory {{ .CP_RAM }} --disk {{ .CP_DISK }} --tty=false
+  create-worker-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mCreating 'worker-1' machine\e[0m"
+      - limactl create lima-config/ubuntu-lts.yaml --name worker-1 --set='.networks[].macAddress="52:55:55:12:34:04"' --cpus {{ .WN_CPUS }} --memory {{ .WN_RAM }} --disk {{ .WN_DISK }} --tty=false
+  create-worker-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mCreating 'worker-2' machine\e[0m"
+      - limactl create lima-config/ubuntu-lts.yaml --name worker-2 --set='.networks[].macAddress="52:55:55:12:34:05"' --cpus {{ .WN_CPUS }} --memory {{ .WN_RAM }} --disk {{ .WN_DISK }} --tty=false
+  create-worker-3:
+      silent: true
+      internal: true
+      cmds:
+        - echo -e "\e[0;32mCreating 'worker-3' machine\e[0m"
+        - limactl create lima-config/ubuntu-lts.yaml --name worker-3 --set='.networks[].macAddress="52:55:55:12:34:06"' --cpus {{ .WN_CPUS }} --memory {{ .WN_RAM }} --disk {{ .WN_DISK }} --tty=false
+
+  start-cp-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStarting 'cp-1' machine\e[0m"
+      - limactl start cp-1
+  start-cp-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStarting 'cp-2' machine\e[0m"
+      - limactl start cp-2
+  start-worker-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStarting 'worker-1' machine\e[0m"
+      - limactl start worker-1
+  start-worker-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStarting 'worker-2' machine\e[0m"
+      - limactl start worker-2
+  start-worker-3:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStarting 'worker-3' machine\e[0m"
+      - limactl start worker-3
+  
+  stop-cp-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStopping 'cp-1' machine\e[0m"
+      - limactl stop cp-1
+  stop-cp-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStopping 'cp-2' machine\e[0m"
+      - limactl stop cp-2
+  stop-worker-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStopping 'worker-1' machine\e[0m"
+      - limactl stop worker-1
+  stop-worker-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStopping 'worker-2' machine\e[0m"
+      - limactl stop worker-2
+  stop-worker-3:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mStopping 'worker-3' machine\e[0m"
+      - limactl stop worker-3
+  
+  delete-cp-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mDeleting 'cp-1' machine\e[0m"
+      - limactl delete --force cp-1
+  delete-cp-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mDeleting 'cp-2' machine\e[0m"
+      - limactl delete --force cp-2
+  delete-worker-1:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mDeleting 'worker-1' machine\e[0m"
+      - limactl delete --force worker-1
+  delete-worker-2:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mDeleting 'worker-2' machine\e[0m"
+      - limactl delete --force worker-2
+  delete-worker-3:
+    silent: true
+    internal: true
+    cmds:
+      - echo -e "\e[0;32mDeleting 'worker-3' machine\e[0m"
+      - limactl delete --force worker-3
