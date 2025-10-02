@@ -42,7 +42,7 @@ tasks:
 
   apply-gateway-manifest:
     silent: true
-    internal: true
+    # internal: true
     env:
       KUBECONFIG: /Users/{{ .USER }}/.kube/config.k8s-multi-nodes
     cmds:
