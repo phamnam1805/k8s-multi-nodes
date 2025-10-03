@@ -14,6 +14,7 @@ kubeProxyReplacement: "true"
 ipam:
   operator:
     clusterPoolIPv4PodCIDRList: ["10.244.0.0/16"]
+  mode: kubernetes
 
 # Cilium operator configuration
 operator:
@@ -45,3 +46,9 @@ ingressController:
 # Enable Gateway API
 gatewayAPI:
   enabled: true
+
+# egressGateway:
+#   enabled: true
+# enableIPv4Masquerade: true
+# bpf:
+#   masquerade: true
