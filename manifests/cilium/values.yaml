@@ -47,8 +47,8 @@ ingressController:
 gatewayAPI:
   enabled: true
 
-# egressGateway:
-#   enabled: true
+egressGateway:
+  enabled: true
 # enableIPv4Masquerade: true
-# bpf:
-#   masquerade: true
+bpf:
+  masquerade: true
